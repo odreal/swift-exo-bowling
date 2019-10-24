@@ -39,9 +39,6 @@ class PlayArea : UIView {
     var pointsArray = [CGPoint]()
     var speedX: Float = 0
     var speedY: Float = 0
-    var startPoint: CGPoint = CGPoint()
-    var endPoint: CGPoint = CGPoint()
-    var countPoint: Int = 0
     
     
     class PhysicObject {
@@ -52,16 +49,15 @@ class PlayArea : UIView {
         var positionY: Float
         var friction: Float = 1
         var isAlive: Bool = true
-        
-        func refreshSpeed(){
-            
-        }
+        var localSpeedVector: Float = 0
+        var weight: Float = 1
         
         func refreshPosition(){
             localSpeedX = localSpeedX * friction
             localSpeedY = localSpeedY * friction
             positionY += localSpeedY
             positionX += localSpeedX
+            localSpeedVector = sqrt( localSpeedX*localSpeedX + localSpeedY*localSpeedY)
         }
         
         func getPosition() -> CGPoint {
@@ -78,6 +74,10 @@ class PlayArea : UIView {
             positionY = posToY
         }
         
+        func getPos()-> CGPoint{
+            return CGPoint(x: CGFloat(positionX), y: CGFloat(positionY))
+        }
+        
         func checkWallTouch(){
             if (positionX + size) > Float(UIScreen.main.bounds.maxX){
                 NSLog("Touched right side of the screen")
@@ -85,7 +85,7 @@ class PlayArea : UIView {
                 localSpeedY = 0
                 isAlive = false
             }
-            if (positionX - size) < Float(UIScreen.main.bounds.maxX){
+            if (positionX - size) < Float(UIScreen.main.bounds.minX){
                 NSLog("Touched left side of the screen")
                 localSpeedX = 0
                 localSpeedY = 0
@@ -97,12 +97,12 @@ class PlayArea : UIView {
                 localSpeedY = 0
                 isAlive = false
             }
-            /*if (positionY - size) < Float(UIScreen.main.bounds.maxY){
+            if (positionY - size) < Float(UIScreen.main.bounds.minY){
                 NSLog("Touched up side of the screen")
                 localSpeedX = 0
                 localSpeedY = 0
                 isAlive = false
-            }*/
+            }
         }
         
         init(tmpPositionX: Float, tmpPositionY: Float){
@@ -110,10 +110,65 @@ class PlayArea : UIView {
             positionY = tmpPositionY
         }
     }
-    
+        
     let playerCircle = PhysicObject(tmpPositionX : Float(UIScreen.main.bounds.maxX)*0.5, tmpPositionY : Float(UIScreen.main.bounds.maxY)*0.75)
     let skittles1 = PhysicObject(tmpPositionX : Float(UIScreen.main.bounds.maxX)*0.33, tmpPositionY : Float(UIScreen.main.bounds.maxY)*0.15)
     let skittles2 = PhysicObject(tmpPositionX : Float(UIScreen.main.bounds.maxX)*0.66, tmpPositionY : Float(UIScreen.main.bounds.maxY)*0.15)
+    
+    func collisionChecker(element1 : PhysicObject, element2 : PhysicObject){
+        let maxRange = (element1.size+element2.size)*(element1.size+element2.size)
+        let estimatedRange = (element2.positionX-element1.positionX)*(element2.positionX-element1.positionX) + (element1.positionY-element2.positionY)*(element1.positionY-element2.positionY)
+        if estimatedRange <= maxRange {
+            NSLog("CONTACTCONTACT")
+            //On determine un point de l'axe de notre premier élement
+            let el1PrePosY = element1.positionY - element1.localSpeedY
+            let el1PrePosX = element1.positionX - element1.localSpeedX
+            NSLog("Equation droite passant pas les deux cercles")
+            NSLog("EQ1 POINT A : X")
+            NSLog(String(element1.positionX))
+            NSLog("EQ1 POINT B : X")
+            NSLog(String(element2.positionX))
+            NSLog("EQ1 POINT A : Y")
+            NSLog(String(element1.positionY))
+            NSLog("EQ1 POINT B : Y")
+            NSLog(String(element2.positionY))
+            NSLog("EQ2 POINT A : X")
+            NSLog(String(el1PrePosX))
+            NSLog("EQ2 POINT A : Y")
+            NSLog(String(el1PrePosY))
+            
+            
+            //On détermine a et b de l'eqt de la droite ax+b pour la droite passant par les deux centes des cercles
+            let eqtAChoc = (element2.positionY - element1.positionY) / (element2.positionX - element1.positionX)
+            let eqtBChoc = ((eqtAChoc * element2.positionX) - element2.positionY) / -1
+            
+            
+            
+            let eqtA = (el1PrePosY - element1.positionY) / (el1PrePosX - element1.positionX)
+            let eqtB = ((eqtA * el1PrePosX) - el1PrePosY) / -1
+                       
+            let angle = tan((eqtAChoc - eqtA) / (1+(eqtA*eqtAChoc)))
+            
+            NSLog("eqt1 a")
+            NSLog(String(eqtA))
+            NSLog("eqt1 b")
+            NSLog(String(eqtB))
+            
+            NSLog("eqt2 a")
+            NSLog(String(eqtAChoc))
+            NSLog("eqt2 b")
+            NSLog(String(eqtBChoc))
+            
+            NSLog("Angle trouvé")
+            NSLog(String(angle))
+            NSLog("CONTACTCONTACT")
+            
+            //Debug
+            element1.localSpeedX = 0
+            element1.localSpeedY = 0
+            
+        }
+    }
     
     override func draw(_ rect: CGRect) {
         UIColor.blue.set()
@@ -146,33 +201,25 @@ class PlayArea : UIView {
     func loop(){
         let loopTimer = Timer.scheduledTimer(withTimeInterval: 0.02, repeats: true) { timer in
             self.playerCircle.refreshPosition()
-            
-            NSLog(String(self.playerCircle.positionY))
             self.setNeedsDisplay()
             
             self.playerCircle.checkWallTouch()
+            self.collisionChecker(element1: self.playerCircle, element2: self.skittles1)
+            //self.collisionChecker(element1: self.playerCircle, element2: self.skittles2)
         }
     }
     
     override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
         if alreadyPlayed == false {
-            countPoint += 1
             var tmpPoint = touches.first!.location(in: self)
             pointsArray.append(tmpPoint)
             
             if pointsArray.count > 3 {
-                var tmpPoint = touches.first!
-                startPoint = pointsArray.first!
-                endPoint = pointsArray.last!
+                var startPoint = pointsArray.first!
+                var endPoint = pointsArray.last!
                 NSLog("Assez de points pour faire un trajet")
-                var endPointX = Float(endPoint.x)
-                var endPointY = Float(endPoint.y)
-                var startPointX = Float(startPoint.x)
-                var startPointY = Float(startPoint.y)
-                speedX =  (endPointX - startPointX)/4
-                speedY =  (endPointY - startPointY)/4
-                NSLog(String(speedX))
-                NSLog(String(speedY))
+                speedX =  (Float(endPoint.x) - Float(startPoint.x))/4
+                speedY =  (Float(endPoint.y) - Float(startPoint.y))/4
                 playerCircle.setSpeed(speedToX: speedX, speedToY: speedY)
                 loop()
                 alreadyPlayed = true
