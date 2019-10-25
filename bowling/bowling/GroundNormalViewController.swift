@@ -160,7 +160,7 @@ class PlayArea : UIView {
             let eqt2A = (el1PrePosY - element1.positionY) / (el1PrePosX - element1.positionX)
             let eqt2B = ((eqt2A * el1PrePosX) - el1PrePosY) / -1
                        
-            let angle = tan((eqt1A - eqt2A) / (1+(eqt2A*eqt1A)))
+            //let angle = tan((eqt1A - eqt2A) / (1+(eqt2A*eqt1A)))
             let angle2 = atan((eqt1A - eqt2A) / (1+(eqt2A*eqt1A)))
             
             NSLog("eqt1 a")
@@ -173,12 +173,12 @@ class PlayArea : UIView {
             NSLog("eqt2 b")
             NSLog(String(eqt2B))
             
-            NSLog("Angle trouvé")
-            NSLog(String(angle))
+            //NSLog("Angle trouvé")
+            //NSLog(String(angle))
             NSLog("Angle trouvé atan")
             NSLog(String(angle2))
-            NSLog("Angle trouvé deg")
-            NSLog(String(rad2deg(angle)))
+            //NSLog("Angle trouvé deg")
+            //NSLog(String(rad2deg(angle)))
             NSLog("Angle trouvé atan deg")
             NSLog(String(rad2deg(angle2)))
             NSLog("CONTACTCONTACT")
@@ -186,11 +186,14 @@ class PlayArea : UIView {
             //Debug
             element1.localSpeedX = 0
             element1.localSpeedY = 0
-            var speedXBeforeChock = element1.localSpeedX
+            let speedXBeforeChock = element1.localSpeedX
             element1.localSpeedX = (angle2/90)*element1.localSpeedX
             element2.localSpeedX = speedXBeforeChock - element1.localSpeedX
-            var eqt3A = -(1/eqt1A)
-            
+            let eqt3A = -(1/eqt1A)
+            let eqt3B = ((eqt3A * element1.positionX) - element1.positionY) / -1
+            // Vitesse pixel/rafraichissement
+            let vitesseBoulle2 = sqrt(element1.localSpeedX * element1.localSpeedX + element1.localSpeedY * element1.localSpeedY)
+
         }
     }
     
