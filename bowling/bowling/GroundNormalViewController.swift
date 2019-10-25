@@ -40,6 +40,10 @@ class PlayArea : UIView {
     var speedX: Float = 0
     var speedY: Float = 0
     
+    func rad2deg(_ number: Float) -> Float {
+        return number * 180 / .pi
+    }
+    
     
     class PhysicObject {
         var size: Float = 25
@@ -139,33 +143,53 @@ class PlayArea : UIView {
             
             
             //On détermine a et b de l'eqt de la droite ax+b pour la droite passant par les deux centes des cercles
-            let eqtAChoc = (element2.positionY - element1.positionY) / (element2.positionX - element1.positionX)
-            let eqtBChoc = ((eqtAChoc * element2.positionX) - element2.positionY) / -1
+            let eqt1A = (element2.positionY - element1.positionY) / (element2.positionX - element1.positionX)
+            NSLog("eqt1 a")
+            NSLog(String(eqt1A))
+            NSLog("eqt1 a * x")
+            NSLog(String(eqt1A * element2.positionX))
+            NSLog("eqt1 a * x - y")
+            NSLog(String((eqt1A * element2.positionX) - element2.positionY))
+            NSLog("pos y point b")
+            NSLog(String(element2.positionY))
+            
+            let eqt1B = ((eqt1A * element2.positionX) - element2.positionY) / -1
             
             
             
-            let eqtA = (el1PrePosY - element1.positionY) / (el1PrePosX - element1.positionX)
-            let eqtB = ((eqtA * el1PrePosX) - el1PrePosY) / -1
+            let eqt2A = (el1PrePosY - element1.positionY) / (el1PrePosX - element1.positionX)
+            let eqt2B = ((eqt2A * el1PrePosX) - el1PrePosY) / -1
                        
-            let angle = tan((eqtAChoc - eqtA) / (1+(eqtA*eqtAChoc)))
+            let angle = tan((eqt1A - eqt2A) / (1+(eqt2A*eqt1A)))
+            let angle2 = atan((eqt1A - eqt2A) / (1+(eqt2A*eqt1A)))
             
             NSLog("eqt1 a")
-            NSLog(String(eqtA))
+            NSLog(String(eqt1A))
             NSLog("eqt1 b")
-            NSLog(String(eqtB))
+            NSLog(String(eqt1B))
             
             NSLog("eqt2 a")
-            NSLog(String(eqtAChoc))
+            NSLog(String(eqt2A))
             NSLog("eqt2 b")
-            NSLog(String(eqtBChoc))
+            NSLog(String(eqt2B))
             
             NSLog("Angle trouvé")
             NSLog(String(angle))
+            NSLog("Angle trouvé atan")
+            NSLog(String(angle2))
+            NSLog("Angle trouvé deg")
+            NSLog(String(rad2deg(angle)))
+            NSLog("Angle trouvé atan deg")
+            NSLog(String(rad2deg(angle2)))
             NSLog("CONTACTCONTACT")
             
             //Debug
             element1.localSpeedX = 0
             element1.localSpeedY = 0
+            var speedXBeforeChock = element1.localSpeedX
+            element1.localSpeedX = (angle2/90)*element1.localSpeedX
+            element2.localSpeedX = speedXBeforeChock - element1.localSpeedX
+            var eqt3A = -(1/eqt1A)
             
         }
     }
